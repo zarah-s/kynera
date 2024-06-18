@@ -5,11 +5,12 @@ import "./libraries/Types.sol";
 import "./libraries/Errors.sol";
 
 contract FookBear {
+    uint constant SLOT_COUNT = 7;
     address owner;
     uint256 collection_count;
     mapping(uint256 => Types.Collection) collection_by_id;
     mapping(string => Types.Collection) collection_by_name;
-    mapping(address => mapping(uint256 => uint256[])) minted;
+    mapping(address => mapping(uint256 => mapping(uint => uint256[]))) minted;
 
     constructor() {
         owner = msg.sender;
@@ -41,7 +42,8 @@ contract FookBear {
     function mint(
         uint256 collectionId,
         address account,
-        uint256 id,
+        uint256 tokenId,
+        Types.Slot slot,
         uint256 amount,
         bytes memory data
     ) external OnlyOwner {
@@ -50,16 +52,17 @@ contract FookBear {
         if (_collection.contract_address == address(0)) {
             revert Errors.COLLECTION_DOES_NOT_EXIST();
         }
-        uint256[] storage _minteds = minted[account][collectionId];
-        _minteds.push(id);
+        uint256[] storage _minteds = minted[account][collectionId][uint(slot)];
+        _minteds.push(tokenId);
 
-        NFT(_collection.contract_address).mint(account, id, amount, data);
+        NFT(_collection.contract_address).mint(account, tokenId, amount, data);
     }
 
     function mintBatch(
         uint256 collectionId,
         address to,
         uint256[] memory ids,
+        Types.Slot slot,
         uint256[] memory amounts,
         bytes memory data
     ) external OnlyOwner {
@@ -74,7 +77,7 @@ contract FookBear {
             revert Errors.COLLECTION_DOES_NOT_EXIST();
         }
         {
-            uint256[] storage _minteds = minted[to][collectionId];
+            uint256[] storage _minteds = minted[to][collectionId][uint(slot)];
             for (uint256 i; i < ids.length; i++) {
                 _minteds.push(ids[i]);
             }
@@ -105,28 +108,22 @@ contract FookBear {
     }
 
     function getUserMintedTokens(
-        address user
+        address user,
+        uint collectionId
     ) external view returns (Types.Minted[] memory) {
-        if (collection_count == 0) {
-            return new Types.Minted[](0);
-        } else {
-            Types.Minted[] memory _minteds = new Types.Minted[](
-                collection_count
-            );
-            uint256 _insertIndex;
-            for (uint256 i = 1; i < collection_count + 1; i++) {
-                uint256[] memory _tokens = minted[user][i];
-                Types.Collection memory _collection = collection_by_id[i];
+        Types.Minted[] memory _minteds = new Types.Minted[](SLOT_COUNT);
+        uint256 _insertIndex;
+        for (uint i; i < SLOT_COUNT; i++) {
+            uint[] memory _tokens = minted[user][collectionId][i];
 
-                _minteds[_insertIndex] = Types.Minted({
-                    tokens: _tokens,
-                    collection_name: _collection.name,
-                    collection_id: i
-                });
-                _insertIndex += 1;
-            }
-
-            return _minteds;
+            _minteds[_insertIndex] = Types.Minted({
+                collection_id: collectionId,
+                slot: Types.Slot(i),
+                tokens: _tokens
+            });
+            _insertIndex += 1;
         }
+
+        return _minteds;
     }
 }

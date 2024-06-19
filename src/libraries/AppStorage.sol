@@ -11,6 +11,7 @@ library AppStorage {
         address owner;
         uint256 collection_count;
         mapping(uint256 => Types.Collection) collection_by_id;
+        mapping(uint => mapping(uint => mapping(uint => uint))) totalSupply;
         mapping(uint => mapping(Types.Slot => address)) accessory;
         mapping(address => mapping(uint256 => mapping(uint => uint256[]))) minted;
     }

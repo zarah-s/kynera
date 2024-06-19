@@ -5,4 +5,6 @@ library Errors {
     error UNAUTHORIZED();
     error COLLECTION_DOES_NOT_EXIST();
     error ACCESSORY_NOT_SET();
+    error INSUFFICIENT_SUPPLY();
+    error ERC1155InvalidArrayLength();
 }

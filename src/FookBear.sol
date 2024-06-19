@@ -19,6 +19,15 @@ contract FookBear {
         _;
     }
 
+    function setTokenSupply(
+        uint collectionId,
+        Types.Slot slot,
+        uint tokenId,
+        uint supply
+    ) external OnlyOwner {
+        layout.totalSupply[collectionId][uint(slot)][tokenId] = supply;
+    }
+
     function setAccessoryURI(
         uint collectionId,
         Types.Slot slot,
@@ -52,6 +61,12 @@ contract FookBear {
         if (_collection.id == 0) {
             revert Errors.COLLECTION_DOES_NOT_EXIST();
         }
+        uint tokenTotalSupply = layout.totalSupply[collectionId][uint(slot)][
+            tokenId
+        ];
+        if (amount > tokenTotalSupply) {
+            revert Errors.INSUFFICIENT_SUPPLY();
+        }
         uint256[] storage _minteds = layout.minted[account][collectionId][
             uint(slot)
         ];
@@ -74,7 +89,7 @@ contract FookBear {
     ) external OnlyOwner {
         {
             if (ids.length != amounts.length) {
-                revert();
+                revert Errors.ERC1155InvalidArrayLength();
             }
         }
 
@@ -89,6 +104,12 @@ contract FookBear {
                 uint(slot)
             ];
             for (uint256 i; i < ids.length; i++) {
+                uint tokenTotalSupply = layout.totalSupply[collectionId][
+                    uint(slot)
+                ][ids[i]];
+                if (amounts[i] > tokenTotalSupply) {
+                    revert Errors.INSUFFICIENT_SUPPLY();
+                }
                 _minteds.push(ids[i]);
             }
         }

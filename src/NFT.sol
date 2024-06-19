@@ -21,6 +21,7 @@ contract NFT is ERC1155, Ownable {
 
     function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);
+        storage_uri = newuri;
     }
 
     function mint(

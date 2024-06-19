@@ -8,7 +8,7 @@ library Types {
     }
     struct Collection {
         string name;
-        address contract_address;
+        // address contract_address;
         uint256 id;
     }
     struct Minted {

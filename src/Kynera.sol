@@ -28,6 +28,14 @@ contract Kynera {
         layout.totalSupply[collectionId][uint(slot)][tokenId] = supply;
     }
 
+    function getTokenTotalSupply(
+        uint collectionId,
+        Types.Slot slot,
+        uint tokenId
+    ) external view returns (uint) {
+        return layout.totalSupply[collectionId][uint(slot)][tokenId];
+    }
+
     function setAccessoryURI(
         uint collectionId,
         Types.Slot slot,

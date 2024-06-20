@@ -5,7 +5,7 @@ import "./libraries/Types.sol";
 import "./libraries/Errors.sol";
 import "./libraries/AppStorage.sol";
 
-contract FookBear {
+contract Kynera {
     AppStorage.Layout internal layout;
 
     constructor() {
@@ -67,14 +67,19 @@ contract FookBear {
         if (amount > tokenTotalSupply) {
             revert Errors.INSUFFICIENT_SUPPLY();
         }
-        uint256[] storage _minteds = layout.minted[account][collectionId][
+        Types.Token[] storage _minteds = layout.minted[account][collectionId][
             uint(slot)
         ];
-        _minteds.push(tokenId);
         address _accessory = layout.accessory[collectionId][slot];
         if (_accessory == address(0)) {
             revert Errors.ACCESSORY_NOT_SET();
         }
+        Types.Token memory tokenData = Types.Token({
+            uri: NFT(_accessory).uri(tokenId),
+            token_id: tokenId,
+            slot: slot
+        });
+        _minteds.push(tokenData);
 
         NFT(_accessory).mint(account, tokenId, amount, data);
     }
@@ -99,8 +104,12 @@ contract FookBear {
         if (_collection.id == 0) {
             revert Errors.COLLECTION_DOES_NOT_EXIST();
         }
+        address _accessory = layout.accessory[collectionId][slot];
+        if (_accessory == address(0)) {
+            revert Errors.ACCESSORY_NOT_SET();
+        }
         {
-            uint256[] storage _minteds = layout.minted[to][collectionId][
+            Types.Token[] storage _minteds = layout.minted[to][collectionId][
                 uint(slot)
             ];
             for (uint256 i; i < ids.length; i++) {
@@ -110,13 +119,16 @@ contract FookBear {
                 if (amounts[i] > tokenTotalSupply) {
                     revert Errors.INSUFFICIENT_SUPPLY();
                 }
-                _minteds.push(ids[i]);
+
+                Types.Token memory tokenData = Types.Token({
+                    uri: NFT(_accessory).uri(ids[i]),
+                    slot: slot,
+                    token_id: ids[i]
+                });
+                _minteds.push(tokenData);
             }
         }
-        address _accessory = layout.accessory[collectionId][slot];
-        if (_accessory == address(0)) {
-            revert Errors.ACCESSORY_NOT_SET();
-        }
+
         NFT(_accessory).mintBatch(to, ids, amounts, data);
     }
 
@@ -150,7 +162,7 @@ contract FookBear {
         );
         uint256 _insertIndex;
         for (uint i; i < AppStorage.SLOT_COUNT; i++) {
-            uint[] memory _tokens = layout.minted[user][collectionId][i];
+            Types.Token[] memory _tokens = layout.minted[user][collectionId][i];
 
             _minteds[_insertIndex] = Types.Minted({
                 collection_id: collectionId,

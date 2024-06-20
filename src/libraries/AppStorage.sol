@@ -13,7 +13,7 @@ library AppStorage {
         mapping(uint256 => Types.Collection) collection_by_id;
         mapping(uint => mapping(uint => mapping(uint => uint))) totalSupply;
         mapping(uint => mapping(Types.Slot => address)) accessory;
-        mapping(address => mapping(uint256 => mapping(uint => uint256[]))) minted;
+        mapping(address => mapping(uint256 => mapping(uint => Types.Token[]))) minted;
     }
 
     function layoutStorage() internal pure returns (Layout storage l) {

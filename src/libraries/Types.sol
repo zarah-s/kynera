@@ -6,14 +6,19 @@ library Types {
         HEAD,
         GLASSES
     }
+
     struct Collection {
         string name;
-        // address contract_address;
         uint256 id;
+    }
+    struct Token {
+        string uri;
+        uint token_id;
+        Types.Slot slot;
     }
     struct Minted {
         uint256 collection_id;
         Slot slot;
-        uint256[] tokens;
+        Token[] tokens;
     }
 }

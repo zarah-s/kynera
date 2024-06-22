@@ -45,6 +45,10 @@ contract Kynera {
     }
 
     function createCollection(string calldata _name) external OnlyOwner {
+        if (layout.collection_by_name[_name].id != 0) {
+            revert Errors.COLLECTION_ALREADY_EXIST();
+        }
+
         layout.collection_count += 1;
         Types.Collection memory _new_collection = Types.Collection({
             name: _name,
@@ -52,6 +56,7 @@ contract Kynera {
         });
 
         layout.collection_by_id[layout.collection_count] = _new_collection;
+        layout.collection_by_name[_name] = _new_collection;
     }
 
     function mint(
@@ -88,6 +93,7 @@ contract Kynera {
             slot: slot
         });
         _minteds.push(tokenData);
+        layout.totalSupply[collectionId][uint(slot)][tokenId] -= amount;
 
         NFT(_accessory).mint(account, tokenId, amount, data);
     }
@@ -134,6 +140,9 @@ contract Kynera {
                     token_id: ids[i]
                 });
                 _minteds.push(tokenData);
+                layout.totalSupply[collectionId][uint(slot)][ids[i]] -= amounts[
+                    i
+                ];
             }
         }
 

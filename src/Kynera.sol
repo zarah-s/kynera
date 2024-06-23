@@ -36,6 +36,21 @@ contract Kynera {
         return layout.totalSupply[collectionId][uint(slot)][tokenId];
     }
 
+    function getMintedTokens(
+        uint collectionId,
+        Types.Slot slot,
+        address account
+    ) external view returns (Types.Token[] memory) {
+        Types.Collection memory _collection = layout.collection_by_id[
+            collectionId
+        ];
+        if (_collection.id == 0) {
+            revert Errors.COLLECTION_DOES_NOT_EXIST();
+        }
+
+        return layout.minted[account][collectionId][uint(slot)];
+    }
+
     function setAccessoryURI(
         uint collectionId,
         Types.Slot slot,
@@ -90,7 +105,8 @@ contract Kynera {
         Types.Token memory tokenData = Types.Token({
             uri: NFT(_accessory).uri(tokenId),
             token_id: tokenId,
-            slot: slot
+            slot: slot,
+            amount: amount
         });
         _minteds.push(tokenData);
         layout.totalSupply[collectionId][uint(slot)][tokenId] -= amount;
@@ -137,7 +153,8 @@ contract Kynera {
                 Types.Token memory tokenData = Types.Token({
                     uri: NFT(_accessory).uri(ids[i]),
                     slot: slot,
-                    token_id: ids[i]
+                    token_id: ids[i],
+                    amount: amounts[i]
                 });
                 _minteds.push(tokenData);
                 layout.totalSupply[collectionId][uint(slot)][ids[i]] -= amounts[
@@ -170,27 +187,27 @@ contract Kynera {
         }
     }
 
-    function getUserMintedTokens(
-        address user,
-        uint collectionId
-    ) external view returns (Types.Minted[] memory) {
-        Types.Minted[] memory _minteds = new Types.Minted[](
-            AppStorage.SLOT_COUNT
-        );
-        uint256 _insertIndex;
-        for (uint i; i < AppStorage.SLOT_COUNT; i++) {
-            Types.Token[] memory _tokens = layout.minted[user][collectionId][i];
+    // function getUserMintedTokens(
+    //     address user,
+    //     uint collectionId
+    // ) external view returns (Types.Minted[] memory) {
+    //     Types.Minted[] memory _minteds = new Types.Minted[](
+    //         AppStorage.SLOT_COUNT
+    //     );
+    //     uint256 _insertIndex;
+    //     for (uint i; i < AppStorage.SLOT_COUNT; i++) {
+    //         Types.Token[] memory _tokens = layout.minted[user][collectionId][i];
 
-            _minteds[_insertIndex] = Types.Minted({
-                collection_id: collectionId,
-                slot: Types.Slot(i),
-                tokens: _tokens
-            });
-            _insertIndex += 1;
-        }
+    //         _minteds[_insertIndex] = Types.Minted({
+    //             collection_id: collectionId,
+    //             slot: Types.Slot(i),
+    //             tokens: _tokens
+    //         });
+    //         _insertIndex += 1;
+    //     }
 
-        return _minteds;
-    }
+    //     return _minteds;
+    // }
 
     function balanceOf(
         uint collectionId,
@@ -289,7 +306,7 @@ contract Kynera {
         if (_accessory == address(0)) {
             revert Errors.ACCESSORY_NOT_SET();
         }
-        return NFT(_accessory).safeTransferFrom(from, to, id, value, data);
+        NFT(_accessory).safeTransferFrom(from, to, id, value, data);
     }
 
     function safeBatchTransferFrom(

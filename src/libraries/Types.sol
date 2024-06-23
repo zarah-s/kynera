@@ -4,7 +4,12 @@ pragma solidity ^0.8.8;
 library Types {
     enum Slot {
         HEAD,
-        GLASSES
+        GLASSES,
+        UPPERBODY,
+        LOWERBODY,
+        HAND,
+        MOUTH,
+        SHOES
     }
 
     struct Collection {
@@ -14,11 +19,12 @@ library Types {
     struct Token {
         string uri;
         uint token_id;
-        Types.Slot slot;
-    }
-    struct Minted {
-        uint256 collection_id;
+        uint amount;
         Slot slot;
-        Token[] tokens;
     }
+    // struct Minted {
+    //     uint256 collection_id;
+    //     Slot slot;
+    //     Token[] tokens;
+    // }
 }
